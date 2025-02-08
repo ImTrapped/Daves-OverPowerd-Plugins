@@ -36,8 +36,7 @@ namespace StupidPlugin
         public static string Description = "A Overpowerd Plugin Pack by dave or @iamtrapped_01310 in discord.";
         public static string Pluginversion = "1.1.0";
 
-        // This runs when the plugin starts, at the beginning of the game if enabled before launch
-        // You should put all of your adding of buttons / categories here
+
         public static void OnEnable()
         {
             UnityEngine.Debug.Log("Plugin " + Name + " has been enabled!");
@@ -55,12 +54,6 @@ namespace StupidPlugin
             AddButton(category, new ButtonInfo { buttonText = "Lag Gun v3 ", method = () => LagGunv3(), toolTip = "Lags whoever is touched by your gun." });
 
 
-            //AddButton(category, new ButtonInfo { buttonText = "Lag test v4 works ", method = () => LagTest4(), toolTip = "Lags whoever is touched by your gun." });
-            //      AddButton(category, new ButtonInfo { buttonText = "Lag test v5 ", method = () => LagTest5(), toolTip = "Lags whoever is touched by your gun." });
-
-            //   AddButton(category, new ButtonInfo { buttonText = "testing ground ", method = () => CrashAll(), toolTip = "Lags whoever is touched by your gun." });
-
-
         }
 
         // This runs when the plugin stops, or when plugins are reloaded
@@ -73,18 +66,13 @@ namespace StupidPlugin
             RemoveButton(GetCategory("Main"), "Daves Overpowerd Plugins V" + Pluginversion);
         }
 
-        // This runs every frame before the mods
         public static void Update()
         {
-            // UnityEngine.Debug.Log(Time.time);
         }
 
-        // This runs when the menu UI is open (togglable with backslash)
-        // I don't recommend using this as an update method
         public static void OnGUI()
         {
             GUI.Label(new Rect(450, 10, 500, 100), " <color=grey>[</color><color=green>Using:</color><color=grey>]</color>  <color=grey>[</color><color=red>Daves OverPowerd Plugins </color><color=grey>]</color>" + "version: " + Pluginversion);
-            //   GUI.Button(new Rect(25, 10, 200, 100), "Player Leave");
         }
 
         public static float laddelayss = 1f;
@@ -289,12 +277,8 @@ namespace StupidPlugin
             }
         }
 
-
-
-
     }
  }
 
     
-
 
