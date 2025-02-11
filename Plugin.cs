@@ -12,6 +12,18 @@ using System.Collections.Generic;
 using static NetworkSystem;
 using PlayFab.ClientModels;
 using GorillaTag.Cosmetics;
+using GorillaTagScripts.UI.ModIO;
+using GorillaTagScripts.CustomMapSupport;
+using UnityEngine.VFX;
+using Viveport;
+using System.Diagnostics;
+using System.IO;
+using System;
+using Photon.Voice;
+using UnityEngine.UIElements;
+using System.Drawing;
+using ExitGames.Client.Photon;
+using Photon.Realtime;
 
 namespace StupidPlugin
 {
@@ -42,8 +54,12 @@ namespace StupidPlugin
             UnityEngine.Debug.Log("Plugin " + Name + " has been enabled!");
 
             int category = AddCategory("Daves Overpowerd Plugins V" + Pluginversion);
+            int category2 = AddCategory("Daves Plugin settings");
+
             AddButton(GetCategory("Main"), new ButtonInfo { buttonText = "Daves Overpowerd Plugins V" + Pluginversion, method = delegate { buttonsType = category; pageNumber = 0; }, isTogglable = false, toolTip = "Brings you to a category for plugins." });
             AddButton(category, new ButtonInfo { buttonText = "Exit Daves Overpowerd Plugins V" + Pluginversion, method = () => Settings.ReturnToMain(), isTogglable = false, toolTip = "Returns you back to the main page." });
+
+       
 
             AddButton(category, new ButtonInfo { buttonText = "Lag all <color=grey>[</color><color=green>RT</color><color=grey>]</color>", method = () => LagAllStanderdized(), toolTip = "Lags everyone." });
 
@@ -62,14 +78,20 @@ namespace StupidPlugin
             AddButton(category, new ButtonInfo { buttonText = "Lag Aura ", method = () => LagAura(), toolTip = "Lags whoever is touched by your gun." });
 
             AddButton(category, new ButtonInfo { buttonText = "Lag spike gun", method = () => LagSpikeGun(), toolTip = "Lags whoever is touched by your gun." });
-          
+
+
+            //plugin settings
+            AddButton(GetCategory("Daves Overpowerd Plugins V" + Pluginversion), new ButtonInfo { buttonText = "Daves Plugin settings", method = delegate { buttonsType = category2; pageNumber = 0; }, isTogglable = false, toolTip = "Brings you to Plugin Settings." });
+            AddButton(category2, new ButtonInfo { buttonText = "Exit Daves Plugin settings", method = delegate { buttonsType = category; pageNumber = 0; }, isTogglable = false, toolTip = "Returns you back to the main page." });
+
+
+            AddButton(category2, new ButtonInfo { buttonText = "Lag Power setter", method = () => SetLagPower(), isTogglable = false, toolTip = "Set the lag power." });
 
 
 
         }
 
-        // This runs when the plugin stops, or when plugins are reloaded
-        // You should put all of your removing of buttons / categories here
+
         public static void OnDisable()
         {
             UnityEngine.Debug.Log("Plugin " + Name + " has been disabled!");
@@ -80,6 +102,7 @@ namespace StupidPlugin
 
         public static void Update()
         {
+
         }
 
         public static void OnGUI()
@@ -90,7 +113,43 @@ namespace StupidPlugin
 
         public static float laddelayss;
         public static float flushDelay;
-        
+
+        public static int LagPower = 1;
+        public static int RealLagAmount;
+        public static string FormatedLagPower;
+
+        public static void UpdateState()
+        {
+            if (LagPower == 0) { RealLagAmount = 0; }
+            else if (LagPower == 1) { RealLagAmount = 55; }
+            else if (LagPower == 2) { RealLagAmount = 70; }
+            else if (LagPower == 3) { RealLagAmount = 110; }
+            else if (LagPower == 4) { RealLagAmount = 160; }
+            else if (LagPower == 5) { RealLagAmount = 220; }
+        }
+        public static void SetLagPower()
+        {
+            if (LagPower >= 5)
+            {
+                LagPower = 0;
+            }
+            else
+            {
+                LagPower++;
+                
+            }
+            if (LagPower < 4)
+            {
+                FormatedLagPower = "<color=grey>[</color><color=green>" + LagPower + "</color><color=grey>]</color>";
+            }
+            else
+            {
+                FormatedLagPower = "<color=grey>[</color><color=red>" + LagPower + "</color><color=grey>]</color>";
+            }
+            UpdateState();
+            GetIndex("Lag Power setter").overlapText = "LagPower " + FormatedLagPower;
+            NotifiLib.SendNotification("LagPower " + FormatedLagPower);
+        }
         public static void LagALlv1()
         {
             if (rightTrigger > 0.5f || Mouse.current.rightButton.isPressed)
@@ -98,7 +157,7 @@ namespace StupidPlugin
                 if (Time.time > laddelayss)
                 {
                     laddelayss = Time.time + 0.5f;
-                    for (int i = 0; i < 220; i++)
+                    for (int i = 0; i < RealLagAmount; i++)
                     {
                         FriendshipGroupDetection.Instance.photonView.RPC("PartyMemberIsAboutToGroupJoin", RpcTarget.Others, new object[] { null });
 
@@ -120,7 +179,7 @@ namespace StupidPlugin
                 if (Time.time > laddelayss)
                 {
                     laddelayss = Time.time + 0.5f;
-                    for (int i = 0; i < 220; i++)
+                    for (int i = 0; i < RealLagAmount; i++)
                     {
                         FriendshipGroupDetection.Instance.photonView.RPC("RequestPartyGameMode", RpcTarget.Others, new object[] { null });
                     }
@@ -139,10 +198,10 @@ namespace StupidPlugin
                 if (Time.time > laddelayss)
                 {
                     laddelayss = Time.time + 0.5f;
-                    for (int i = 0; i < 220; i++)
+                    for (int i = 0; i < RealLagAmount; i++)
                     {
                         FriendshipGroupDetection.Instance.photonView.RPC("VerifyPartyMember", RpcTarget.Others, new object[] { null });
-                        
+
                     }
                 }
                 if (Time.time > flushDelay)
@@ -156,22 +215,27 @@ namespace StupidPlugin
         }
         public static void LagAllv4()
         {
-            if (Time.time > laddelayss)
+            if (rightTrigger > 0.5f || Mouse.current.rightButton.isPressed)
             {
-                laddelayss = Time.time + 0.5f;
-                for (int i = 0; i < 220; i++)
+                if (Time.time > laddelayss)
                 {
-                    FriendshipGroupDetection.Instance.photonView.RPC("NotifyPartyGameModeChanged", RpcTarget.Others, new object[] { null });
+                    laddelayss = Time.time + 0.5f;
+                    for (int i = 0; i < RealLagAmount; i++)
+                    {
+                        FriendshipGroupDetection.Instance.photonView.RPC("NotifyPartyGameModeChanged", RpcTarget.Others, new object[] { null });
+                    }
                 }
-            }
-            if (Time.time > flushDelay)
-            {
-                flushDelay = Time.time + 0.4f;
-                RPCProtection();
+                if (Time.time > flushDelay)
+                {
+                    flushDelay = Time.time + 0.4f;
+                    RPCProtection();
+                }
             }
 
 
         }
+        
+        
 
 
         public static void LagGunv1()
@@ -187,7 +251,7 @@ namespace StupidPlugin
                     if (Time.time > laddelayss)
                     {
                         laddelayss = Time.time + 0.5f;
-                        for (int i = 0; i < 220; i++)
+                        for (int i = 0; i < RealLagAmount; i++)
                         {
                             FriendshipGroupDetection.Instance.photonView.RPC("PartyMemberIsAboutToGroupJoin", RigManager.NetPlayerToPlayer(RigManager.GetPlayerFromVRRig(whoCopy)), new object[] { null });
                         }
@@ -233,7 +297,7 @@ namespace StupidPlugin
                     if (Time.time > laddelayss)
                     {
                         laddelayss = Time.time + 0.5f;
-                        for (int i = 0; i < 220; i++)
+                        for (int i = 0; i < RealLagAmount; i++)
                         {
                             FriendshipGroupDetection.Instance.photonView.RPC("RequestPartyGameMode", RigManager.NetPlayerToPlayer(RigManager.GetPlayerFromVRRig(whoCopy)), new object[] { null });
                         }
@@ -280,7 +344,7 @@ namespace StupidPlugin
                     if (Time.time > laddelayss)
                     {
                         laddelayss = Time.time + 0.5f;
-                        for (int i = 0; i < 220; i++)
+                        for (int i = 0; i < RealLagAmount; i++)
                         {
                             FriendshipGroupDetection.Instance.photonView.RPC("VerifyPartyMember", RigManager.NetPlayerToPlayer(RigManager.GetPlayerFromVRRig(whoCopy)), new object[] { null });
                         }
@@ -325,7 +389,7 @@ namespace StupidPlugin
                     if (Time.time > laddelayss)
                     {
                         laddelayss = Time.time + 0.5f;
-                        for (int i = 0; i < 220; i++)
+                        for (int i = 0; i < RealLagAmount; i++)
                         {
                             FriendshipGroupDetection.Instance.photonView.RPC("NotifyPartyGameModeChanged", RigManager.NetPlayerToPlayer(RigManager.GetPlayerFromVRRig(whoCopy)), new object[] { null });
                         }
@@ -433,7 +497,7 @@ namespace StupidPlugin
                     }
                     RPCProtection();
                 }
-               
+
             }
 
         }
@@ -461,9 +525,8 @@ namespace StupidPlugin
                 RPCProtection();
             }
         }
-
     }
- }
+}
 
     
 
